@@ -163,6 +163,7 @@ class DataEdit:
     """
 
     def __init__(self, data_class):
+        self.edit_mode = None
         self.d = None
         self.data = None
         self.data_class = data_class
@@ -189,7 +190,7 @@ class DataEdit:
         except KeyboardInterrupt:
             return 0
 
-        if self.id_get_from_user > 0 and self.id_get_from_user - 1 <= len(self.d):
+        if 0 < self.id_get_from_user <= len(self.d):
             self.edit_data()
         else:
             print("N-записи невалидный :(")
@@ -205,25 +206,39 @@ class DataEdit:
                   f"Рабочий телефон: {self.data[str(self.id_get_from_user)]['work_phone']}\n"
                   f"Личный телефон: {self.data[str(self.id_get_from_user)]['personal_phone']}\n"
                   f"Выход Ctrl + C\n")
+            self.edit_mode = int(input("[1]Удалить или [2]отредактировать запись?\nВведите N: "))
+            if self.edit_mode == 2:
+                self.new_surname = str(input("Введите новую фамилию: "))
+                self.new_name = str(input("Введите новое имя: "))
+                self.new_otchestvo = str(input("Введите новое отчество: "))
+                self.new_name_of_organization = str(input("Введите новую организацию: "))
+                self.new_work_phone = str(input("Введите новый рабочий телефон:"))
+                self.new_personal_phone = str(input("Введите новый личный телефон: "))
+                print("Сохранить изменения y/n?")
+                while True:
+                    key = msvcrt.getch()
+                    if ord(key) == 27:  # ESC
+                        break
+    
+                    if ord(key) == 121:
+                        self.save_edited_json()
+                        break
+    
+                    if ord(key) == 110:
+                        break
+            elif self.edit_mode == 1:
+                print("Удалить запись y/n?")
+                while True:
+                    key = msvcrt.getch()
+                    if ord(key) == 27:  # ESC
+                        break
 
-            self.new_surname = str(input("Введите новую фамилию: "))
-            self.new_name = str(input("Введите новое имя: "))
-            self.new_otchestvo = str(input("Введите новое отчество: "))
-            self.new_name_of_organization = str(input("Введите новую организацию: "))
-            self.new_work_phone = str(input("Введите новый рабочий телефон:"))
-            self.new_personal_phone = str(input("Введите новый личный телефон: "))
-            print("Сохранить изменения y/n?")
-            while True:
-                key = msvcrt.getch()
-                if ord(key) == 27:  # ESC
-                    break
+                    if ord(key) == 121:
+                        self.delete_from_json()
+                        break
 
-                if ord(key) == 121:
-                    self.save_edited_json()
-                    break
-
-                if ord(key) == 110:
-                    break
+                    if ord(key) == 110:
+                        break
 
             return 0
         except KeyboardInterrupt:
@@ -237,6 +252,16 @@ class DataEdit:
         self.data[str(self.id_get_from_user)]['work_phone'] = self.new_work_phone
         self.data[str(self.id_get_from_user)]['personal_phone'] = self.new_personal_phone
         data_write_to_json("final_results.json", self.data)
+        self.init_data()
+        self.data_class.init_data()
+
+    def delete_from_json(self):
+        self.data.pop(str(self.id_get_from_user))
+        new_d = {}
+        for i, v in enumerate(self.data.values()):
+            new_d.update({i+1: v})
+        self.edit_mode = None
+        data_write_to_json("final_results.json", new_d)
         self.init_data()
         self.data_class.init_data()
 
